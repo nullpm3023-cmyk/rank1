@@ -1,76 +1,159 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>對戰表</title>
+    <title>月酌新春對戰表 - 自動晉級版</title>
     <style>
-        body { font-family: sans-serif; background: #f0f0f0; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .header { background: #1e5bb9; color: white; padding: 15px 50px; border-radius: 5px; font-size: 24px; margin-bottom: 20px; }
-        .container { display: flex; gap: 50px; align-items: flex-start; }
-        .group-box { border: 1px solid #ccc; padding: 20px; background: white; border-radius: 10px; text-align: center; }
-        .group-label { background: #ffe0b2; padding: 5px 20px; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        :root { --main-blue: #1e5bb9; --bg-yellow: #ffe0b2; --line-color: #ccc; --active-color: #ff9800; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background: #f8f9fa; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         
-        input { background: #ffe0b2; border: 1px solid #ffb74d; padding: 8px; text-align: center; width: 90px; border-radius: 4px; margin: 5px; }
-        
-        /* 繪製線條 */
-        .match-wrap { display: flex; flex-direction: column; align-items: center; }
-        .line-v { border: 1px solid #999; border-bottom: none; height: 20px; width: 80px; margin: 5px 0; }
-        .text-sm { font-size: 12px; color: #666; }
+        .header { background: var(--main-blue); color: white; padding: 15px 40px; border-radius: 8px; font-size: 24px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .info { text-align: center; margin-bottom: 30px; color: #666; font-size: 14px; }
 
-        .champion-wrap { margin-top: 30px; text-align: center; border-top: 2px solid #999; padding-top: 20px; width: 400px; }
+        .tournament { display: flex; gap: 60px; align-items: flex-start; position: relative; }
+        .group-title { background: #ffcc80; padding: 5px 20px; font-weight: bold; margin-bottom: 30px; border-radius: 4px; }
+
+        /* 隊伍框樣式 */
+        .team-input { 
+            background: var(--bg-yellow); border: 2px solid #ffb74d; padding: 8px; 
+            text-align: center; width: 100px; border-radius: 6px; cursor: pointer;
+            transition: all 0.3s; position: relative; z-index: 2;
+        }
+        .team-input:hover { border-color: var(--active-color); background: #fff3e0; }
+        .team-input:focus { background: white; outline: none; border-color: var(--active-color); }
+
+        /* 線條容器 */
+        .matchup { display: flex; flex-direction: column; align-items: center; position: relative; }
+        .line { 
+            width: 2px; height: 30px; background: var(--line-color); 
+            margin: 5px 0; transition: background 0.5s ease; position: relative;
+        }
+        .line.active { background: var(--active-color); box-shadow: 0 0 8px var(--active-color); }
+        
+        /* 橫向連接線 */
+        .connector-h { 
+            display: flex; justify-content: center; position: relative; width: 100%;
+        }
+        .connector-h::before {
+            content: ""; position: absolute; top: 0; height: 2px; width: 50%;
+            background: var(--line-color); transition: background 0.5s;
+        }
+        .connector-h.active::before { background: var(--active-color); }
+
+        /* 控制按鈕 */
+        .controls { position: fixed; bottom: 20px; right: 20px; display: flex; gap: 10px; }
+        .btn { 
+            padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; 
+            background: #333; color: white; font-weight: bold; transition: 0.2s;
+        }
+        .btn:hover { background: #555; }
+        .undo-btn { background: #e53935; }
+        .undo-btn:hover { background: #c62828; }
+
+        .label-text { font-size: 12px; color: #888; margin: 4px 0; }
     </style>
 </head>
 <body>
 
     <div class="header">月酌新春活動“看起來很會打”</div>
-    <p>1/31 21:30 DC直播抽籤 | 點擊框框可輸入隊名</p>
+    <div class="info">💡 操作說明：<b>按兩下(Double Click)</b> 隊伍框可晉級下一輪 | <b>右下角</b> 可退回</div>
 
-    <div class="container">
-        <div class="group-box">
-            <div class="group-label">A 組</div>
-            <div style="display: flex; gap: 20px;">
-                <div class="match-wrap">
-                    <div><input type="text" value="第一隊"><input type="text" value="第二隊"></div>
-                    <div class="text-sm">勝者晉級</div>
-                    <div class="line-v"></div>
-                    <input type="text" placeholder="第X隊">
+    <div class="tournament">
+        <div class="group">
+            <center><div class="group-title">A 組</div></center>
+            <div style="display: flex; gap: 40px;">
+                <div class="matchup">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" class="team-input" value="第一隊" id="a1" ondblclick="promote('a1', 'a_win1', 'line_a1')">
+                        <input type="text" class="team-input" value="第二隊" id="a2" ondblclick="promote('a2', 'a_win1', 'line_a1')">
+                    </div>
+                    <div class="label-text">勝者晉級</div>
+                    <div class="line" id="line_a1"></div>
+                    <input type="text" class="team-input" placeholder="第X隊" id="a_win1" ondblclick="promote('a_win1', 'a_final', 'line_af')">
                 </div>
-                <div class="match-wrap" style="justify-content: center;">
-                    <input type="text" value="第三隊">
+                <div class="matchup" style="justify-content: flex-start; padding-top: 10px;">
+                    <input type="text" class="team-input" value="第三隊" id="a3" ondblclick="promote('a3', 'a_final', 'line_af')">
                 </div>
             </div>
-            <div class="match-wrap" style="margin-top: 20px;">
-                <div class="text-sm">三戰兩勝</div>
-                <div class="line-v" style="width: 150px;"></div>
-                <input type="text" placeholder="A組勝者">
+            <div class="matchup" style="margin-top: 20px;">
+                <div class="label-text">三戰兩勝</div>
+                <div class="line" style="width: 140px; height: 2px;" id="line_af"></div>
+                <input type="text" class="team-input" placeholder="A組勝者" id="a_final" ondblclick="promote('a_final', 'grand_final', 'line_last')">
             </div>
         </div>
 
-        <div class="group-box">
-            <div class="group-label">B 組</div>
-            <div style="display: flex; gap: 20px;">
-                <div class="match-wrap" style="justify-content: center;">
-                    <input type="text" value="第四隊">
+        <div class="group">
+            <center><div class="group-title">B 組</div></center>
+            <div style="display: flex; gap: 40px;">
+                <div class="matchup" style="justify-content: flex-start; padding-top: 10px;">
+                    <input type="text" class="team-input" value="第四隊" id="b1" ondblclick="promote('b1', 'b_final', 'line_bf')">
                 </div>
-                <div class="match-wrap">
-                    <div><input type="text" value="第五隊"><input type="text" value="第六隊"></div>
-                    <div class="text-sm">勝者晉級</div>
-                    <div class="line-v"></div>
-                    <input type="text" placeholder="第X隊">
+                <div class="matchup">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" class="team-input" value="第五隊" id="b2" ondblclick="promote('b2', 'b_win1', 'line_b1')">
+                        <input type="text" class="team-input" value="第六隊" id="b3" ondblclick="promote('b3', 'b_win1', 'line_b1')">
+                    </div>
+                    <div class="label-text">勝者晉級</div>
+                    <div class="line" id="line_b1"></div>
+                    <input type="text" class="team-input" placeholder="第X隊" id="b_win1" ondblclick="promote('b_win1', 'b_final', 'line_bf')">
                 </div>
             </div>
-            <div class="match-wrap" style="margin-top: 20px;">
-                <div class="text-sm">三戰兩勝</div>
-                <div class="line-v" style="width: 150px;"></div>
-                <input type="text" placeholder="B組勝者">
+            <div class="matchup" style="margin-top: 20px;">
+                <div class="label-text">三戰兩勝</div>
+                <div class="line" style="width: 140px; height: 2px;" id="line_bf"></div>
+                <input type="text" class="team-input" placeholder="B組勝者" id="b_final" ondblclick="promote('b_final', 'grand_final', 'line_last')">
             </div>
         </div>
     </div>
 
-    <div class="champion-wrap">
-        <div class="text-sm">五戰三勝 總決賽</div>
-        <input type="text" style="width: 150px; font-weight: bold; font-size: 20px;" value="最後冠軍">
+    <div class="matchup" style="margin-top: 40px; width: 100%;">
+        <div class="label-text">五戰三勝 總決賽</div>
+        <div class="line" style="height: 40px;" id="line_last"></div>
+        <input type="text" class="team-input" value="最後冠軍" id="grand_final" style="width: 180px; font-size: 20px; font-weight: bold; height: 40px;">
     </div>
 
+    <div class="controls">
+        <button class="btn undo-btn" onclick="undo()">⬅ 退回上一步</button>
+        <button class="btn" onclick="location.reload()">🔄 重設全部</button>
+    </div>
+
+    <script>
+        let history = [];
+
+        function promote(fromId, toId, lineId) {
+            const fromEl = document.getElementById(fromId);
+            const toEl = document.getElementById(toId);
+            const lineEl = document.getElementById(lineId);
+
+            // 紀錄歷史紀錄 (用於退回)
+            history.push({
+                toId: toId,
+                oldValue: toEl.value,
+                lineId: lineId,
+                lineWasActive: lineEl.classList.contains('active')
+            });
+
+            // 執行晉級
+            toEl.value = fromEl.value;
+            
+            // 觸發動畫
+            lineEl.classList.remove('active');
+            void lineEl.offsetWidth; // 觸發重繪
+            lineEl.classList.add('active');
+        }
+
+        function undo() {
+            if (history.length === 0) return;
+            const lastAction = history.pop();
+            
+            const toEl = document.getElementById(lastAction.toId);
+            const lineEl = document.getElementById(lastAction.lineId);
+
+            toEl.value = lastAction.oldValue;
+            if (!lastAction.lineWasActive) {
+                lineEl.classList.remove('active');
+            }
+        }
+    </script>
 </body>
 </html>
